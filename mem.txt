@@ -1,0 +1,64 @@
+Total: 797.05MB
+ROUTINE ======================== hw3_bench.FastSearch in /home/matvey/Desktop/go2223/hw3_bench/fast.go
+   14.54MB    43.29MB (flat, cum)  5.43% of Total
+         .          .      9:	"os"
+         .          .     10:	"strings"
+         .          .     11:)
+         .          .     12:
+         .          .     13:func FastSearch(out io.Writer) {
+         .   512.05kB     14:	file, err := os.Open(filePath)
+         .          .     15:	defer file.Close()
+         .          .     16:	if err != nil {
+         .          .     17:		panic(err)
+         .          .     18:	}
+         .          .     19:
+         .          .     20:	seenBrowsers := make(map[string]bool)
+         .          .     21:	uniqueBrowsers := 0
+         .          .     22:	foundUsers := strings.Builder{}
+         .          .     23:	i := 0
+         .          .     24:	isAndroid := false
+         .          .     25:	isMSIE := false
+         .          .     26:	var line []byte
+         .          .     27:	//r := regexp.MustCompile("@")
+         .          .     28:	user := &usertool.User{}
+         .          .     29:
+         .          .     30:	scanner := bufio.NewScanner(file)
+         .          .     31:	scanner.Split(bufio.ScanLines)
+         .          .     32:
+         .     4.52MB     33:	for scanner.Scan() {
+         .          .     34:
+         .          .     35:		line = scanner.Bytes()
+         .     4.18MB     36:		err := easyjson.Unmarshal(line, user)
+         .          .     37:		if err != nil {
+         .          .     38:			panic(err)
+         .          .     39:		}
+         .          .     40:
+         .          .     41:		isAndroid = false
+         .          .     42:		isMSIE = false
+         .          .     43:
+         .          .     44:		for _, browser := range user.Browsers {
+         .          .     45:			if strings.Contains(browser, "Android") {
+         .          .     46:				isAndroid = true
+         .          .     47:				if _, ok := seenBrowsers[browser]; !ok {
+    2.50MB     2.50MB     48:					seenBrowsers[browser] = true
+         .          .     49:					uniqueBrowsers++
+         .          .     50:				}
+         .          .     51:			}
+         .          .     52:			if strings.Contains(browser, "MSIE") {
+         .          .     53:				isMSIE = true
+         .          .     54:				if _, ok := seenBrowsers[browser]; !ok {
+    7.02MB     7.02MB     55:					seenBrowsers[browser] = true
+         .          .     56:					uniqueBrowsers++
+         .          .     57:				}
+         .          .     58:			}
+         .          .     59:		}
+         .          .     60:
+         .          .     61:		if isAndroid && isMSIE {
+       1MB    20.55MB     62:			foundUsers.WriteString(fmt.Sprintf("[%d] %s <%s>\n", i, user.Name, strings.ReplaceAll(user.Email, "@", " [at] ")))
+         .          .     63:		}
+         .          .     64:		i++
+         .          .     65:	}
+         .          .     66:
+    4.02MB     4.02MB     67:	fmt.Fprintln(out, "found users:\n"+foundUsers.String())
+         .          .     68:	fmt.Fprintln(out, "Total unique browsers", uniqueBrowsers)
+         .          .     69:}

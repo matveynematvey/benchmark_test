@@ -1,0 +1,43 @@
+Total: 3.15s
+ROUTINE ======================== hw3_bench.FastSearch in /home/matvey/Desktop/go2223/hw3_bench/fast.go
+      20ms      1.33s (flat, cum) 42.22% of Total
+         .          .     27:	isAndroid := false
+         .          .     28:	isMSIE := false
+         .          .     29:	line := make([]byte, 0)
+         .          .     30:	user := &usertool.User{}
+         .          .     31:
+         .      160ms     32:	for scanner.Scan() {
+         .          .     33:
+         .          .     34:		line = scanner.Bytes()
+         .      800ms     35:		err := easyjson.Unmarshal(line, user)
+         .          .     36:		if err != nil {
+         .          .     37:			panic(err)
+         .          .     38:		}
+         .          .     39:
+         .          .     40:		isAndroid = false
+         .          .     41:		isMSIE = false
+         .          .     42:
+      10ms       10ms     43:		for _, browser := range user.Browsers {
+         .      130ms     44:			if strings.Contains(browser, "Android") {
+         .          .     45:				isAndroid = true
+         .       40ms     46:				if _, ok := seenBrowsers[browser]; !ok {
+         .       10ms     47:					seenBrowsers[browser] = true
+         .          .     48:					uniqueBrowsers++
+         .          .     49:				}
+         .          .     50:			}
+         .      100ms     51:			if strings.Contains(browser, "MSIE") {
+         .          .     52:				isMSIE = true
+         .          .     53:				if _, ok := seenBrowsers[browser]; !ok {
+         .          .     54:					seenBrowsers[browser] = true
+         .          .     55:					uniqueBrowsers++
+         .          .     56:				}
+         .          .     57:			}
+         .          .     58:		}
+         .          .     59:
+      10ms       10ms     60:		if isAndroid && isMSIE {
+         .       70ms     61:			foundUsers.WriteString(fmt.Sprintf("[%d] %s <%s>\n", i, user.Name, strings.ReplaceAll(user.Email, "@", " [at] ")))
+         .          .     62:		}
+         .          .     63:		i++
+         .          .     64:	}
+         .          .     65:
+         .          .     66:	fmt.Fprintln(out, "found users:\n"+foundUsers.String())
